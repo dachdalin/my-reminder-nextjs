@@ -1,86 +1,88 @@
 import { db } from '@/lib/db'
-import { reminders as reminder, telegramConnection } from '@/lib/db/schema'
-import { and, eq, lte } from 'drizzle-orm'
+import { reminders, telegramConnection } from '@/lib/db/schema'
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
+const TIME_ZONE = process.env.REMINDER_TIME_ZONE ?? 'Asia/Phnom_Penh'
+
+type Reminder = typeof reminders.$inferSelect
+
+export async function GET(request: Request) {
+  return sendTomorrowReminders(request)
+}
 
 export async function POST(request: Request) {
-  // Verify authorization token from header
+  return sendTomorrowReminders(request)
+}
+
+async function sendTomorrowReminders(request: Request) {
   const authToken = request.headers.get('Authorization')
-  const expectedToken = process.env.REMINDER_CRON_SECRET
+  const expectedToken = process.env.CRON_SECRET || process.env.REMINDER_CRON_SECRET
 
   if (!authToken || !expectedToken || authToken !== `Bearer ${expectedToken}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!TELEGRAM_BOT_TOKEN) {
     return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
+      { error: 'TELEGRAM_BOT_TOKEN is not configured' },
+      { status: 500 }
     )
   }
 
   try {
-    const now = new Date()
+    const tomorrow = getTomorrowDateKey()
 
-    // Get all reminders that are due
-    const dueReminders = await db
+    const rows = await db
       .select({
-        reminder: reminder,
-        telegramConnection: telegramConnection,
-      })
-      .from(reminder)
-      .leftJoin(
+        reminder: reminders,
         telegramConnection,
-        eq(reminder.userId, telegramConnection.userId)
+      })
+      .from(reminders)
+      .innerJoin(
+        telegramConnection,
+        eq(reminders.userId, telegramConnection.userId)
       )
       .where(
-        and(
-          lte(reminder.scheduledTime, now),
-          // Assuming we add a 'sent' column later to track sent reminders
-        )
+        and(eq(reminders.meetingDate, tomorrow), isNull(reminders.sentAt))
       )
 
+    const remindersByChat = new Map<string, Reminder[]>()
+
+    for (const row of rows) {
+      const chatId = row.telegramConnection.telegramChatId
+      remindersByChat.set(chatId, [
+        ...(remindersByChat.get(chatId) ?? []),
+        row.reminder,
+      ])
+    }
+
     let sentCount = 0
+    const sentIds: number[] = []
 
-    for (const { reminder: rem, telegramConnection: tg } of dueReminders) {
-      if (!tg || !TELEGRAM_BOT_TOKEN) continue
+    for (const [chatId, chatReminders] of remindersByChat) {
+      const message = formatTomorrowMessage(chatReminders)
+      const didSend = await sendTelegramMessage(chatId, message)
 
-      const message = formatReminderMessage(rem)
-
-      try {
-        const response = await fetch(
-          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              chat_id: tg.telegramChatId,
-              text: message,
-              parse_mode: 'HTML',
-            }),
-          }
-        )
-
-        if (response.ok) {
-          sentCount++
-        } else {
-          console.error(
-            `Failed to send reminder ${rem.id} to user ${rem.userId}:`,
-            response.statusText
-          )
-        }
-      } catch (error) {
-        console.error(
-          `Error sending reminder ${rem.id} to Telegram:`,
-          error
-        )
+      if (didSend) {
+        sentCount++
+        sentIds.push(...chatReminders.map((reminder) => reminder.id))
       }
+    }
+
+    if (sentIds.length > 0) {
+      await db
+        .update(reminders)
+        .set({ sentAt: new Date() })
+        .where(inArray(reminders.id, sentIds))
     }
 
     return NextResponse.json({
       success: true,
-      sentCount,
-      totalDue: dueReminders.length,
+      meetingDate: tomorrow,
+      sentChats: sentCount,
+      totalItems: rows.length,
     })
   } catch (error) {
     console.error('Error in reminder cron:', error)
@@ -91,14 +93,80 @@ export async function POST(request: Request) {
   }
 }
 
-function formatReminderMessage(rem: any): string {
-  let message = `<b>⏰ Reminder: ${rem.title}</b>\n\n`
+async function sendTelegramMessage(chatId: string, text: string) {
+  const response = await fetch(
+    `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'HTML',
+      }),
+    }
+  )
 
-  if (rem.description) {
-    message += `${rem.description}\n\n`
+  if (!response.ok) {
+    console.error('Failed to send Telegram reminder:', response.statusText)
+    return false
   }
 
-  message += `<i>Scheduled: ${new Date(rem.scheduledTime).toLocaleString()}</i>`
+  return true
+}
 
-  return message
+function formatTomorrowMessage(items: Reminder[]) {
+  const lines = ['<b>ជូនដំណឹង សម្រាប់ថ្ងៃស្អែក</b>', '']
+
+  items.forEach((item, index) => {
+    const participants = item.participants
+      .split('\n')
+      .map((participant) => participant.trim())
+      .filter(Boolean)
+
+    lines.push(`${toKhmerNumber(index + 1)}. ${escapeHtml(item.title)}`)
+    lines.push(`      ទីតាំង៖ ${escapeHtml(item.place)}`)
+    lines.push(`      អ្នកត្រូវចូលរួម ${escapeHtml(participants[0] ?? '')}`)
+
+    for (const participant of participants.slice(1)) {
+      lines.push(`                       ${escapeHtml(participant)}`)
+    }
+
+    lines.push('')
+  })
+
+  lines.push('សូមអរគុណ')
+
+  return lines.join('\n')
+}
+
+function getTomorrowDateKey() {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  const todayKey = formatter.format(new Date())
+  const tomorrow = new Date(`${todayKey}T00:00:00.000Z`)
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+  return tomorrow.toISOString().slice(0, 10)
+}
+
+function toKhmerNumber(value: number) {
+  const khmerDigits = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩']
+  return value
+    .toString()
+    .split('')
+    .map((digit) => khmerDigits[Number(digit)])
+    .join('')
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
 }

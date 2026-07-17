@@ -1,15 +1,13 @@
-import { db } from '@/lib/db'
-import { telegramConnection } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
 
 interface TelegramMessage {
   message?: {
     chat: {
       id: number
+      title?: string
+      type?: string
     }
     from: {
       id: number
@@ -25,12 +23,17 @@ export async function POST(request: NextRequest) {
 
     if (data.message?.text === '/start') {
       const chatId = data.message.chat.id.toString()
-      const telegramUserId = data.message.from.id.toString()
+      const chatName =
+        data.message.chat.title ??
+        data.message.from.username ??
+        data.message.chat.type ??
+        'this chat'
 
       await sendTelegramMessage(
         chatId,
-        '👋 Hello! Your Telegram account is now ready to receive reminders.\n\n' +
-          'You can create reminders from the web app and they will be sent to you here.'
+        `Telegram target ready for ${escapeHtml(chatName)}.\n\n` +
+          `Chat ID: <code>${escapeHtml(chatId)}</code>\n\n` +
+          'Copy this chat ID into the web app.'
       )
 
       return NextResponse.json({ ok: true })
@@ -44,6 +47,13 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
 }
 
 export async function sendTelegramMessage(chatId: string, text: string) {

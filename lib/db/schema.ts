@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, boolean } from 'drizzle-orm/pg-core'
+import { boolean, date, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 
 // --- Better Auth required tables -------------------------------------------
 // Column names are camelCase to match Better Auth's defaults. Do not rename.
@@ -57,8 +57,10 @@ export const reminders = pgTable('reminders', {
   id: serial('id').primaryKey(),
   userId: text('userId').notNull(),
   title: text('title').notNull(),
-  description: text('description'),
-  scheduledTime: timestamp('scheduledTime').notNull(),
+  place: text('place').notNull(),
+  participants: text('participants').notNull(),
+  meetingDate: date('meetingDate').notNull(),
+  sentAt: timestamp('sentAt'),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 })

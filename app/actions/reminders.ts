@@ -19,13 +19,14 @@ export async function getReminders() {
     .select()
     .from(reminders)
     .where(eq(reminders.userId, userId))
-    .orderBy(desc(reminders.scheduledTime))
+    .orderBy(desc(reminders.meetingDate), desc(reminders.createdAt))
 }
 
 export async function createReminder(data: {
   title: string
-  description?: string
-  scheduledTime: Date
+  place: string
+  participants: string
+  meetingDate: string
 }) {
   const userId = await getUserId()
   const result = await db
@@ -41,7 +42,12 @@ export async function createReminder(data: {
 
 export async function updateReminder(
   id: number,
-  data: { title?: string; description?: string; scheduledTime?: Date }
+  data: {
+    title?: string
+    place?: string
+    participants?: string
+    meetingDate?: string
+  }
 ) {
   const userId = await getUserId()
   const result = await db

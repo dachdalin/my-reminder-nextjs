@@ -4,7 +4,6 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Reminder App',
   description: 'Create and manage reminders with Telegram notifications',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
@@ -41,8 +40,6 @@ export default function RootLayout({
     <html lang="en" className="bg-background">
       <body className="antialiased">
         {children}
-        {process.env.NODE_ENV === 'production' 
-        }
       </body>
     </html>
   )

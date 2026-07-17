@@ -7,8 +7,10 @@ import { Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 interface Reminder {
   id: number
   title: string
-  description?: string
-  scheduledTime: Date
+  place: string
+  participants: string
+  meetingDate: string
+  sentAt?: Date | string | null
   createdAt: Date
 }
 
@@ -38,18 +40,25 @@ export default function ReminderList({ reminders, onDelete }: ReminderListProps)
 
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date
-    return d.toLocaleString([], {
+    return d.toLocaleDateString([], {
       month: 'short',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      year: 'numeric',
     })
   }
 
-  const isOverdue = (scheduledTime: Date | string) => {
-    const d = typeof scheduledTime === 'string' ? new Date(scheduledTime) : scheduledTime
-    return d < new Date()
+  const isOverdue = (meetingDate: Date | string) => {
+    const d = typeof meetingDate === 'string' ? new Date(`${meetingDate}T00:00:00`) : meetingDate
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return d < today
   }
+
+  const participantNames = (participants: string) =>
+    participants
+      .split('\n')
+      .map((name) => name.trim())
+      .filter(Boolean)
 
   return (
     <div className="space-y-3">
@@ -57,7 +66,7 @@ export default function ReminderList({ reminders, onDelete }: ReminderListProps)
         <div
           key={reminder.id}
           className={`border rounded-lg transition-all ${
-            isOverdue(reminder.scheduledTime)
+            isOverdue(reminder.meetingDate)
               ? 'border-destructive/30 bg-destructive/5'
               : 'border-border hover:border-primary/50'
           }`}
@@ -71,8 +80,9 @@ export default function ReminderList({ reminders, onDelete }: ReminderListProps)
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-foreground truncate">{reminder.title}</h3>
               <p className="text-sm text-muted-foreground">
-                {isOverdue(reminder.scheduledTime) ? '⏰ Overdue: ' : '⏰ '}
-                {formatDate(reminder.scheduledTime)}
+                {isOverdue(reminder.meetingDate) ? 'Overdue: ' : ''}
+                {formatDate(reminder.meetingDate)}
+                {reminder.sentAt ? ' · Sent' : ''}
               </p>
             </div>
             <div className="ml-4 flex items-center gap-2">
@@ -94,11 +104,19 @@ export default function ReminderList({ reminders, onDelete }: ReminderListProps)
             </div>
           </button>
 
-          {expandedId === reminder.id && reminder.description && (
+          {expandedId === reminder.id && (
             <div className="border-t border-border px-4 py-3 bg-secondary/10">
-              <p className="text-sm text-foreground whitespace-pre-wrap">
-                {reminder.description}
+              <p className="text-sm text-foreground">
+                <span className="font-medium">Place:</span> {reminder.place}
               </p>
+              <div className="mt-3">
+                <p className="text-sm font-medium text-foreground">Participants</p>
+                <ul className="mt-1 list-disc pl-5 text-sm text-foreground">
+                  {participantNames(reminder.participants).map((name) => (
+                    <li key={name}>{name}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
         </div>

@@ -13,8 +13,10 @@ interface Reminder {
   id: number
   userId: string
   title: string
-  description?: string
-  scheduledTime: Date
+  place: string
+  participants: string
+  meetingDate: string
+  sentAt?: Date | null
   createdAt: Date
   updatedAt: Date
 }
@@ -50,6 +52,8 @@ export default function ReminderDashboard() {
   }
 
   useEffect(() => {
+    // Initial server-action load for the client dashboard.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData()
   }, [])
 
@@ -67,7 +71,7 @@ export default function ReminderDashboard() {
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">⏰</span>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Reminders</h1>
+            <h1 className="text-2xl font-bold text-foreground">Meeting Reminders</h1>
           </div>
           <button
             onClick={handleLogout}
@@ -86,7 +90,7 @@ export default function ReminderDashboard() {
             {/* Create Reminder Card */}
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-foreground">New Reminder</h2>
+                <h2 className="text-lg font-semibold text-foreground">New Meeting Item</h2>
                 {showForm && (
                   <button
                     onClick={() => setShowForm(false)}
@@ -108,14 +112,14 @@ export default function ReminderDashboard() {
                   onClick={() => setShowForm(true)}
                   className="w-full bg-primary hover:bg-primary/90"
                 >
-                  Add Reminder
+                  Add Meeting Item
                 </Button>
               )}
             </div>
 
             {/* Telegram Connection Card */}
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Telegram</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-4">Telegram Target</h2>
               <TelegramConnector
                 isConnected={!!telegramConnection}
                 onConnect={() => loadData()}
@@ -126,16 +130,16 @@ export default function ReminderDashboard() {
           {/* Right Column - Reminders List */}
           <div className="lg:col-span-2">
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-foreground mb-6">Your Reminders</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-6">Meeting Schedule</h2>
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="text-muted-foreground">Loading...</div>
                 </div>
               ) : reminders.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-2">No reminders yet</p>
+                  <p className="text-muted-foreground mb-2">No meeting items yet</p>
                   <p className="text-sm text-muted-foreground">
-                    Create your first reminder to get started
+                    Add agenda rows for each meeting date to get started
                   </p>
                 </div>
               ) : (
@@ -148,4 +152,3 @@ export default function ReminderDashboard() {
     </div>
   )
 }
-

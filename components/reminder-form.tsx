@@ -10,8 +10,9 @@ interface ReminderFormProps {
 
 export default function ReminderForm({ onSuccess }: ReminderFormProps) {
   const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [scheduledTime, setScheduledTime] = useState('')
+  const [place, setPlace] = useState('')
+  const [participants, setParticipants] = useState('')
+  const [meetingDate, setMeetingDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -24,8 +25,23 @@ export default function ReminderForm({ onSuccess }: ReminderFormProps) {
       return
     }
 
-    if (!scheduledTime) {
-      setError('Please select a date and time')
+    if (!place.trim()) {
+      setError('Place is required')
+      return
+    }
+
+    const participantLines = participants
+      .split('\n')
+      .map((name) => name.trim())
+      .filter(Boolean)
+
+    if (participantLines.length === 0) {
+      setError('Add at least one participant name')
+      return
+    }
+
+    if (!meetingDate) {
+      setError('Please select a meeting date')
       return
     }
 
@@ -33,13 +49,15 @@ export default function ReminderForm({ onSuccess }: ReminderFormProps) {
     try {
       await createReminder({
         title: title.trim(),
-        description: description.trim() || undefined,
-        scheduledTime: new Date(scheduledTime),
+        place: place.trim(),
+        participants: participantLines.join('\n'),
+        meetingDate,
       })
 
       setTitle('')
-      setDescription('')
-      setScheduledTime('')
+      setPlace('')
+      setParticipants('')
+      setMeetingDate('')
       onSuccess()
     } catch (err) {
       setError('Failed to create reminder. Please try again.')
@@ -52,34 +70,51 @@ export default function ReminderForm({ onSuccess }: ReminderFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Title</label>
+        <label className="block text-sm font-medium text-foreground mb-2">Meeting Title</label>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Reminder title"
+          placeholder="ប្រជុំពិភាគក្សា"
           className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           disabled={isLoading}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Description</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Optional description"
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none h-20"
+        <label className="block text-sm font-medium text-foreground mb-2">Place</label>
+        <input
+          type="text"
+          value={place}
+          onChange={(e) => setPlace(e.target.value)}
+          placeholder="សាលាឃុំ"
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           disabled={isLoading}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Date & Time</label>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          Participants
+        </label>
+        <textarea
+          value={participants}
+          onChange={(e) => setParticipants(e.target.value)}
+          placeholder={'សុខ ស៊ា\nទឹម សារ៉ុម'}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-24"
+          disabled={isLoading}
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Put one participant name per line.
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">Meeting Date</label>
         <input
-          type="datetime-local"
-          value={scheduledTime}
-          onChange={(e) => setScheduledTime(e.target.value)}
+          type="date"
+          value={meetingDate}
+          onChange={(e) => setMeetingDate(e.target.value)}
           className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           disabled={isLoading}
         />
@@ -92,7 +127,7 @@ export default function ReminderForm({ onSuccess }: ReminderFormProps) {
         disabled={isLoading}
         className="w-full bg-primary hover:bg-primary/90"
       >
-        {isLoading ? 'Creating...' : 'Create Reminder'}
+        {isLoading ? 'Creating...' : 'Create Meeting Item'}
       </Button>
     </form>
   )
