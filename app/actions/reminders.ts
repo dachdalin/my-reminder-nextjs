@@ -50,9 +50,13 @@ export async function updateReminder(
   }
 ) {
   const userId = await getUserId()
+  const nextData = {
+    ...data,
+    sentAt: null,
+  }
   const result = await db
     .update(reminders)
-    .set(data)
+    .set(nextData)
     .where(and(eq(reminders.id, id), eq(reminders.userId, userId)))
     .returning()
   revalidatePath('/')

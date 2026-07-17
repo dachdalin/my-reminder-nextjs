@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { deleteReminder } from '@/app/actions/reminders'
-import { Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import ReminderForm from './reminder-form'
+import { ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react'
 
 interface Reminder {
   id: number
@@ -17,10 +18,16 @@ interface Reminder {
 interface ReminderListProps {
   reminders: Reminder[]
   onDelete: () => void
+  onUpdate: () => void
 }
 
-export default function ReminderList({ reminders, onDelete }: ReminderListProps) {
+export default function ReminderList({
+  reminders,
+  onDelete,
+  onUpdate,
+}: ReminderListProps) {
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleDelete = async (id: number) => {
@@ -106,17 +113,40 @@ export default function ReminderList({ reminders, onDelete }: ReminderListProps)
 
           {expandedId === reminder.id && (
             <div className="border-t border-border px-4 py-3 bg-secondary/10">
-              <p className="text-sm text-foreground">
-                <span className="font-medium">Place:</span> {reminder.place}
-              </p>
-              <div className="mt-3">
-                <p className="text-sm font-medium text-foreground">Participants</p>
-                <ul className="mt-1 list-disc pl-5 text-sm text-foreground">
-                  {participantNames(reminder.participants).map((name) => (
-                    <li key={name}>{name}</li>
-                  ))}
-                </ul>
-              </div>
+              {editingId === reminder.id ? (
+                <ReminderForm
+                  reminder={reminder}
+                  onCancel={() => setEditingId(null)}
+                  onSuccess={() => {
+                    setEditingId(null)
+                    onUpdate()
+                  }}
+                />
+              ) : (
+                <>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">Place:</span> {reminder.place}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(reminder.id)}
+                      className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-foreground">Participants</p>
+                    <ul className="mt-1 list-disc pl-5 text-sm text-foreground">
+                      {participantNames(reminder.participants).map((name) => (
+                        <li key={name}>{name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

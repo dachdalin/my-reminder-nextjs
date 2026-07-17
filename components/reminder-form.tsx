@@ -1,20 +1,35 @@
 'use client'
 
 import { useState } from 'react'
-import { createReminder } from '@/app/actions/reminders'
+import { createReminder, updateReminder } from '@/app/actions/reminders'
 import { Button } from '@/components/ui/button'
+
+interface Reminder {
+  id: number
+  title: string
+  place: string
+  participants: string
+  meetingDate: string
+}
 
 interface ReminderFormProps {
   onSuccess: () => void
+  onCancel?: () => void
+  reminder?: Reminder
 }
 
-export default function ReminderForm({ onSuccess }: ReminderFormProps) {
-  const [title, setTitle] = useState('')
-  const [place, setPlace] = useState('')
-  const [participants, setParticipants] = useState('')
-  const [meetingDate, setMeetingDate] = useState('')
+export default function ReminderForm({
+  onSuccess,
+  onCancel,
+  reminder,
+}: ReminderFormProps) {
+  const [title, setTitle] = useState(reminder?.title ?? '')
+  const [place, setPlace] = useState(reminder?.place ?? '')
+  const [participants, setParticipants] = useState(reminder?.participants ?? '')
+  const [meetingDate, setMeetingDate] = useState(reminder?.meetingDate ?? '')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const isEditing = !!reminder
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,12 +62,18 @@ export default function ReminderForm({ onSuccess }: ReminderFormProps) {
 
     setIsLoading(true)
     try {
-      await createReminder({
+      const payload = {
         title: title.trim(),
         place: place.trim(),
         participants: participantLines.join('\n'),
         meetingDate,
-      })
+      }
+
+      if (reminder) {
+        await updateReminder(reminder.id, payload)
+      } else {
+        await createReminder(payload)
+      }
 
       setTitle('')
       setPlace('')
@@ -60,7 +81,7 @@ export default function ReminderForm({ onSuccess }: ReminderFormProps) {
       setMeetingDate('')
       onSuccess()
     } catch (err) {
-      setError('Failed to create reminder. Please try again.')
+      setError(`Failed to ${isEditing ? 'update' : 'create'} meeting item. Please try again.`)
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -122,13 +143,32 @@ export default function ReminderForm({ onSuccess }: ReminderFormProps) {
 
       {error && <div className="text-sm text-destructive">{error}</div>}
 
-      <Button
-        type="submit"
-        disabled={isLoading}
-        className="w-full bg-primary hover:bg-primary/90"
-      >
-        {isLoading ? 'Creating...' : 'Create Meeting Item'}
-      </Button>
+      <div className="flex gap-2">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isLoading}
+            onClick={onCancel}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+        )}
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="flex-1 bg-primary hover:bg-primary/90"
+        >
+          {isLoading
+            ? isEditing
+              ? 'Saving...'
+              : 'Creating...'
+            : isEditing
+              ? 'Save Changes'
+              : 'Create Meeting Item'}
+        </Button>
+      </div>
     </form>
   )
 }

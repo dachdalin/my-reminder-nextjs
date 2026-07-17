@@ -121,7 +121,9 @@ export default function ReminderDashboard() {
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
               <h2 className="text-lg font-semibold text-foreground mb-4">Telegram Target</h2>
               <TelegramConnector
+                key={telegramConnection?.id ?? 'new-telegram-target'}
                 isConnected={!!telegramConnection}
+                connection={telegramConnection}
                 onConnect={() => loadData()}
               />
             </div>
@@ -143,7 +145,11 @@ export default function ReminderDashboard() {
                   </p>
                 </div>
               ) : (
-                <ReminderList reminders={reminders} onDelete={loadData} />
+                <ReminderList
+                  reminders={reminders}
+                  onDelete={loadData}
+                  onUpdate={loadData}
+                />
               )}
             </div>
           </div>
