@@ -31,7 +31,7 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     setLoading(false)
 
     if (error) {
-      setError(error.message ?? 'Something went wrong')
+      setError(error.message ?? 'មានបញ្ហាកើតឡើង')
       return
     }
 
@@ -44,19 +44,19 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       <Card className="w-full max-w-sm p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {isSignUp ? 'Create an account' : 'Welcome back'}
+            {isSignUp ? 'បង្កើតគណនី' : 'សូមស្វាគមន៍មកវិញ'}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {isSignUp
-              ? 'Sign up to get started'
-              : 'Sign in to your account to continue'}
+              ? 'ចុះឈ្មោះដើម្បីចាប់ផ្តើមប្រើប្រាស់'
+              : 'ចូលគណនីរបស់អ្នកដើម្បីបន្ត'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {isSignUp && (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">ឈ្មោះ</Label>
               <Input
                 id="name"
                 value={name}
@@ -67,7 +67,7 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
             </div>
           )}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">អ៊ីមែល</Label>
             <Input
               id="email"
               type="email"
@@ -78,7 +78,7 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">ពាក្យសម្ងាត់</Label>
             <Input
               id="password"
               type="password"
@@ -98,20 +98,20 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
           <Button type="submit" disabled={loading} className="w-full">
             {loading
-              ? 'Please wait...'
+              ? 'សូមរង់ចាំ...'
               : isSignUp
-                ? 'Create account'
-                : 'Sign in'}
+                ? 'បង្កើតគណនី'
+                : 'ចូលគណនី'}
           </Button>
         </form>
 
         <p className="text-sm text-muted-foreground text-center mt-6">
-          {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+          {isSignUp ? 'មានគណនីរួចហើយ? ' : 'មិនទាន់មានគណនី? '}
           <Link
             href={isSignUp ? '/sign-in' : '/sign-up'}
             className="text-foreground font-medium underline-offset-4 hover:underline"
           >
-            {isSignUp ? 'Sign in' : 'Sign up'}
+            {isSignUp ? 'ចូលគណនី' : 'ចុះឈ្មោះ'}
           </Link>
         </p>
       </Card>

@@ -71,12 +71,12 @@ export default function ReminderDashboard() {
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">⏰</span>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Meeting Reminders</h1>
+            <h1 className="text-2xl font-bold text-foreground">ជូនដំណឹងប្រជុំ</h1>
           </div>
           <button
             onClick={handleLogout}
             className="p-2 hover:bg-secondary rounded-lg transition-colors"
-            title="Logout"
+            title="ចាកចេញ"
           >
             <LogOut className="w-5 h-5 text-foreground" />
           </button>
@@ -90,7 +90,7 @@ export default function ReminderDashboard() {
             {/* Create Reminder Card */}
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-foreground">New Meeting Item</h2>
+                <h2 className="text-lg font-semibold text-foreground">កម្មវិធីប្រជុំថ្មី</h2>
                 {showForm && (
                   <button
                     onClick={() => setShowForm(false)}
@@ -112,14 +112,14 @@ export default function ReminderDashboard() {
                   onClick={() => setShowForm(true)}
                   className="w-full bg-primary hover:bg-primary/90"
                 >
-                  Add Meeting Item
+                  បន្ថែមកម្មវិធីប្រជុំ
                 </Button>
               )}
             </div>
 
             {/* Telegram Connection Card */}
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Telegram Target</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-4">គោលដៅ Telegram</h2>
               <TelegramConnector
                 key={telegramConnection?.id ?? 'new-telegram-target'}
                 isConnected={!!telegramConnection}
@@ -132,16 +132,16 @@ export default function ReminderDashboard() {
           {/* Right Column - Reminders List */}
           <div className="lg:col-span-2">
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-foreground mb-6">Meeting Schedule</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-6">កាលវិភាគប្រជុំ</h2>
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="text-muted-foreground">Loading...</div>
+                  <div className="text-muted-foreground">កំពុងផ្ទុក...</div>
                 </div>
               ) : reminders.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-2">No meeting items yet</p>
+                  <p className="text-muted-foreground mb-2">មិនទាន់មានកម្មវិធីប្រជុំ</p>
                   <p className="text-sm text-muted-foreground">
-                    Add agenda rows for each meeting date to get started
+                    បន្ថែមកម្មវិធីសម្រាប់កាលបរិច្ឆេទប្រជុំនីមួយៗដើម្បីចាប់ផ្តើម
                   </p>
                 </div>
               ) : (

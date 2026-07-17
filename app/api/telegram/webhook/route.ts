@@ -27,13 +27,13 @@ export async function POST(request: NextRequest) {
         data.message.chat.title ??
         data.message.from.username ??
         data.message.chat.type ??
-        'this chat'
+        'ឆាតនេះ'
 
       await sendTelegramMessage(
         chatId,
-        `Telegram target ready for ${escapeHtml(chatName)}.\n\n` +
-          `Chat ID: <code>${escapeHtml(chatId)}</code>\n\n` +
-          'Copy this chat ID into the web app.'
+        `បានរៀបចំគោលដៅ Telegram សម្រាប់ ${escapeHtml(chatName)} រួចរាល់។\n\n` +
+          `លេខសម្គាល់ឆាត៖ <code>${escapeHtml(chatId)}</code>\n\n` +
+          'សូមចម្លងលេខសម្គាល់ឆាតនេះទៅក្នុងប្រព័ន្ធ។'
       )
 
       return NextResponse.json({ ok: true })

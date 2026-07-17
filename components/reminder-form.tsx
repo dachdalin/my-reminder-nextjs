@@ -36,12 +36,12 @@ export default function ReminderForm({
     setError('')
 
     if (!title.trim()) {
-      setError('Title is required')
+      setError('សូមបញ្ចូលចំណងជើងប្រជុំ')
       return
     }
 
     if (!place.trim()) {
-      setError('Place is required')
+      setError('សូមបញ្ចូលទីតាំង')
       return
     }
 
@@ -51,12 +51,12 @@ export default function ReminderForm({
       .filter(Boolean)
 
     if (participantLines.length === 0) {
-      setError('Add at least one participant name')
+      setError('សូមបញ្ចូលឈ្មោះអ្នកចូលរួមយ៉ាងហោចណាស់ម្នាក់')
       return
     }
 
     if (!meetingDate) {
-      setError('Please select a meeting date')
+      setError('សូមជ្រើសរើសកាលបរិច្ឆេទប្រជុំ')
       return
     }
 
@@ -81,7 +81,11 @@ export default function ReminderForm({
       setMeetingDate('')
       onSuccess()
     } catch (err) {
-      setError(`Failed to ${isEditing ? 'update' : 'create'} meeting item. Please try again.`)
+      setError(
+        isEditing
+          ? 'កែប្រែកម្មវិធីប្រជុំមិនបានសម្រេច។ សូមព្យាយាមម្តងទៀត។'
+          : 'បង្កើតកម្មវិធីប្រជុំមិនបានសម្រេច។ សូមព្យាយាមម្តងទៀត។'
+      )
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -91,7 +95,7 @@ export default function ReminderForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Meeting Title</label>
+        <label className="block text-sm font-medium text-foreground mb-2">ចំណងជើងប្រជុំ</label>
         <input
           type="text"
           value={title}
@@ -103,7 +107,7 @@ export default function ReminderForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Place</label>
+        <label className="block text-sm font-medium text-foreground mb-2">ទីតាំង</label>
         <input
           type="text"
           value={place}
@@ -116,7 +120,7 @@ export default function ReminderForm({
 
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">
-          Participants
+          អ្នកត្រូវចូលរួម
         </label>
         <textarea
           value={participants}
@@ -126,12 +130,12 @@ export default function ReminderForm({
           disabled={isLoading}
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Put one participant name per line.
+          សូមបញ្ចូលឈ្មោះម្នាក់ក្នុងមួយបន្ទាត់។
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-2">Meeting Date</label>
+        <label className="block text-sm font-medium text-foreground mb-2">កាលបរិច្ឆេទប្រជុំ</label>
         <input
           type="date"
           value={meetingDate}
@@ -152,7 +156,7 @@ export default function ReminderForm({
             onClick={onCancel}
             className="flex-1"
           >
-            Cancel
+            បោះបង់
           </Button>
         )}
         <Button
@@ -162,11 +166,11 @@ export default function ReminderForm({
         >
           {isLoading
             ? isEditing
-              ? 'Saving...'
-              : 'Creating...'
+              ? 'កំពុងរក្សាទុក...'
+              : 'កំពុងបង្កើត...'
             : isEditing
-              ? 'Save Changes'
-              : 'Create Meeting Item'}
+              ? 'រក្សាទុកការកែប្រែ'
+              : 'បង្កើតកម្មវិធីប្រជុំ'}
         </Button>
       </div>
     </form>

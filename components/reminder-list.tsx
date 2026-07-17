@@ -31,7 +31,7 @@ export default function ReminderList({
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this reminder?')) return
+    if (!confirm('តើអ្នកពិតជាចង់លុបកម្មវិធីប្រជុំនេះមែនទេ?')) return
 
     setDeletingId(id)
     try {
@@ -39,7 +39,7 @@ export default function ReminderList({
       onDelete()
     } catch (error) {
       console.error('Failed to delete reminder:', error)
-      alert('Failed to delete reminder')
+      alert('លុបកម្មវិធីប្រជុំមិនបានសម្រេច')
     } finally {
       setDeletingId(null)
     }
@@ -47,7 +47,7 @@ export default function ReminderList({
 
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date
-    return d.toLocaleDateString([], {
+    return d.toLocaleDateString('km-KH', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -87,9 +87,9 @@ export default function ReminderList({
             <div className="flex-1 min-w-0">
               <h3 className="font-medium text-foreground truncate">{reminder.title}</h3>
               <p className="text-sm text-muted-foreground">
-                {isOverdue(reminder.meetingDate) ? 'Overdue: ' : ''}
+                {isOverdue(reminder.meetingDate) ? 'ហួសកាលបរិច្ឆេទ៖ ' : ''}
                 {formatDate(reminder.meetingDate)}
-                {reminder.sentAt ? ' · Sent' : ''}
+                {reminder.sentAt ? ' · បានផ្ញើ' : ''}
               </p>
             </div>
             <div className="ml-4 flex items-center gap-2">
@@ -126,7 +126,7 @@ export default function ReminderList({
                 <>
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm text-foreground">
-                      <span className="font-medium">Place:</span> {reminder.place}
+                      <span className="font-medium">ទីតាំង៖</span> {reminder.place}
                     </p>
                     <button
                       type="button"
@@ -134,11 +134,11 @@ export default function ReminderList({
                       className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                      Edit
+                      កែប្រែ
                     </button>
                   </div>
                   <div className="mt-3">
-                    <p className="text-sm font-medium text-foreground">Participants</p>
+                    <p className="text-sm font-medium text-foreground">អ្នកត្រូវចូលរួម</p>
                     <ul className="mt-1 list-disc pl-5 text-sm text-foreground">
                       {participantNames(reminder.participants).map((name) => (
                         <li key={name}>{name}</li>

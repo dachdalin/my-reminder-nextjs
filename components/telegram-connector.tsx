@@ -42,7 +42,7 @@ export default function TelegramConnector({
     setError('')
 
     if (!chatId.trim()) {
-      setError('Telegram chat ID is required')
+      setError('សូមបញ្ចូល Chat ID របស់ Telegram')
       return
     }
 
@@ -53,7 +53,7 @@ export default function TelegramConnector({
       onConnect()
     } catch (err) {
       console.error(err)
-      setError('Failed to save Telegram target')
+      setError('រក្សាទុកគោលដៅ Telegram មិនបានសម្រេច')
     } finally {
       setIsSaving(false)
     }
@@ -66,9 +66,9 @@ export default function TelegramConnector({
           <div className="flex items-center gap-3">
             <Check className="h-5 w-5 text-primary" />
             <div>
-              <p className="text-sm font-medium text-foreground">Telegram target saved</p>
+              <p className="text-sm font-medium text-foreground">បានរក្សាទុកគោលដៅ Telegram</p>
               <p className="text-xs text-muted-foreground break-all">
-                Chat ID: {connection?.telegramChatId}
+                លេខសម្គាល់ឆាត៖ {connection?.telegramChatId}
               </p>
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function TelegramConnector({
             onClick={() => setIsEditing((current) => !current)}
             className="rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-primary/10 hover:text-foreground"
           >
-            {isEditing ? 'Close' : 'Edit'}
+            {isEditing ? 'បិទ' : 'កែប្រែ'}
           </button>
         </div>
 
@@ -103,7 +103,7 @@ export default function TelegramConnector({
     <div className="space-y-4">
       <div className="flex items-start gap-3 rounded-lg border border-border bg-secondary/10 p-4 text-sm text-muted-foreground">
         <span className="mt-0.5 text-lg">📱</span>
-        <p>Add the bot to a private chat or group, send /start, then save the chat ID here.</p>
+        <p>បន្ថែមបូតទៅក្នុងឆាតផ្ទាល់ខ្លួន ឬក្រុម រួចផ្ញើ /start ហើយរក្សាទុកលេខសម្គាល់ឆាតនៅទីនេះ។</p>
       </div>
 
       <TelegramTargetForm
@@ -152,12 +152,12 @@ function TelegramTargetForm({
         className="w-full gap-2 bg-primary hover:bg-primary/90"
       >
         <MessageCircle className="h-4 w-4" />
-        Open Telegram Bot
+        បើកបូត Telegram
       </Button>
 
       <div>
         <label className="mb-2 block text-xs font-medium text-muted-foreground">
-          Send this command in the target chat:
+          ផ្ញើពាក្យបញ្ជានេះក្នុងឆាតគោលដៅ៖
         </label>
         <div className="flex gap-2">
           <code className="flex-1 rounded bg-secondary px-3 py-2 font-mono text-sm text-foreground">
@@ -180,33 +180,33 @@ function TelegramTargetForm({
       <form onSubmit={onSubmit} className="space-y-3">
         <div>
           <label className="mb-2 block text-xs font-medium text-muted-foreground">
-            Telegram chat ID
+            លេខសម្គាល់ឆាត Telegram
           </label>
           <input
             type="text"
             value={chatId}
             onChange={(event) => onChatIdChange(event.target.value)}
-            placeholder="Private or group chat ID"
+            placeholder="លេខសម្គាល់ឆាតឯកជន ឬក្រុម"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             disabled={isSaving}
           />
         </div>
         <div>
           <label className="mb-2 block text-xs font-medium text-muted-foreground">
-            Telegram user ID
+            លេខសម្គាល់អ្នកប្រើ Telegram
           </label>
           <input
             type="text"
             value={telegramUserId}
             onChange={(event) => onTelegramUserIdChange(event.target.value)}
-            placeholder="Optional"
+            placeholder="បំពេញ ឬទុកទំនេរ"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             disabled={isSaving}
           />
         </div>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <Button type="submit" disabled={isSaving} className="w-full">
-          {isSaving ? 'Saving...' : 'Save Telegram Target'}
+          {isSaving ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកគោលដៅ Telegram'}
         </Button>
       </form>
     </div>

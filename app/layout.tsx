@@ -1,9 +1,42 @@
 import type { Metadata, Viewport } from 'next'
+import localFont from 'next/font/local'
 import './globals.css'
 
+const hanuman = localFont({
+  src: [
+    {
+      path: './fonts/Hanuman-Thin.ttf',
+      weight: '100',
+      style: 'normal',
+    },
+    {
+      path: './fonts/Hanuman-Light.ttf',
+      weight: '300',
+      style: 'normal',
+    },
+    {
+      path: './fonts/Hanuman-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: './fonts/Hanuman-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: './fonts/Hanuman-Black.ttf',
+      weight: '900',
+      style: 'normal',
+    },
+  ],
+  display: 'swap',
+  fallback: ['system-ui', 'sans-serif'],
+})
+
 export const metadata: Metadata = {
-  title: 'Reminder App',
-  description: 'Create and manage reminders with Telegram notifications',
+  title: 'ប្រព័ន្ធជូនដំណឹងប្រជុំ',
+  description: 'បង្កើត និងគ្រប់គ្រងការជូនដំណឹងប្រជុំតាម Telegram',
   icons: {
     icon: [
       {
@@ -37,8 +70,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background">
-      <body className="antialiased">
+    <html lang="km" className="bg-background">
+      <body className={`${hanuman.className} antialiased`}>
         {children}
       </body>
     </html>
