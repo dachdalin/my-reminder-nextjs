@@ -2,8 +2,8 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { reminders, telegramConnection } from '@/lib/db/schema'
-import { and, desc, eq } from 'drizzle-orm'
+import { reminders, telegramConnection, user } from '@/lib/db/schema'
+import { and, desc, eq, ne } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
@@ -102,4 +102,32 @@ export async function saveTelegramConnection(chatId: string, userId: string) {
     })
   }
   revalidatePath('/')
+}
+
+export async function updatePersonalInfo(data: { name: string; email: string }) {
+  const userId = await getUserId()
+
+  // Validate that the email is not already taken by another user
+  const existingUser = await db
+    .select()
+    .from(user)
+    .where(and(eq(user.email, data.email), ne(user.id, userId)))
+    .limit(1)
+
+  if (existingUser.length > 0) {
+    throw new Error('Email is already taken')
+  }
+
+  const result = await db
+    .update(user)
+    .set({
+      name: data.name,
+      email: data.email,
+      updatedAt: new Date(),
+    })
+    .where(eq(user.id, userId))
+    .returning()
+
+  revalidatePath('/')
+  return result[0]
 }

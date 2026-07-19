@@ -6,8 +6,9 @@ import ReminderForm from './reminder-form'
 import ReminderList from './reminder-list'
 import TelegramConnector from './telegram-connector'
 import { getReminders, getTelegramConnection } from '@/app/actions/reminders'
-import { LogOut } from 'lucide-react'
+import { LogOut, Settings } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
+import SettingsModal from './settings-modal'
 
 interface Reminder {
   id: number
@@ -34,6 +35,7 @@ export default function ReminderDashboard() {
   const [telegramConnection, setTelegramConnection] = useState<TelegramConn | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const loadData = async () => {
     setIsLoading(true)
@@ -73,13 +75,22 @@ export default function ReminderDashboard() {
             </div>
             <h1 className="text-2xl font-bold text-foreground">ជូនដំណឹងប្រជុំ</h1>
           </div>
-          <button
-            onClick={handleLogout}
-            className="p-2 hover:bg-secondary rounded-lg transition-colors"
-            title="ចាកចេញ"
-          >
-            <LogOut className="w-5 h-5 text-foreground" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 hover:bg-secondary rounded-lg transition-colors text-foreground"
+              title="ការកំណត់"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
+              title="ចាកចេញ"
+            >
+              <LogOut className="w-5 h-5 text-foreground" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -155,6 +166,8 @@ export default function ReminderDashboard() {
           </div>
         </div>
       </main>
+
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   )
 }
