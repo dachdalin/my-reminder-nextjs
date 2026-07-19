@@ -33,6 +33,7 @@ async function sendTomorrowReminders(request: Request) {
 
   try {
     const tomorrow = getTomorrowDateKey()
+    console.log(`[Cron] Checking reminders. Timezone: ${TIME_ZONE}, Current local time: ${new Date().toLocaleString('en-US', { timeZone: TIME_ZONE })}, Target date: ${tomorrow}`)
 
     const rows = await db
       .select({
