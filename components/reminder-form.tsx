@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createReminder, updateReminder } from '@/app/actions/reminders'
 import { Button } from '@/components/ui/button'
+import DatePickerWithKhmer from './datepicker-kh'
 
 interface Reminder {
   id: number
@@ -135,12 +136,11 @@ export default function ReminderForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-2">កាលបរិច្ឆេទប្រជុំ</label>
-        <input
-          type="date"
+        <DatePickerWithKhmer
+          label="កាលបរិច្ឆេទប្រជុំ"
           value={meetingDate}
-          onChange={(e) => setMeetingDate(e.target.value)}
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          onChange={(value) => setMeetingDate(value)}
+          locale="km"
           disabled={isLoading}
         />
       </div>

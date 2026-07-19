@@ -119,7 +119,7 @@ async function sendTelegramMessage(chatId: string, text: string) {
 }
 
 function formatTomorrowMessage(items: Reminder[]) {
-  const lines = ['<b>ជូនដំណឹង សម្រាប់ថ្ងៃស្អែក</b>', '']
+  const lines = ['🔔 <b>ជូនដំណឹង សម្រាប់ថ្ងៃស្អែក</b>', '']
 
   items.forEach((item, index) => {
     const participants = item.participants
@@ -128,17 +128,16 @@ function formatTomorrowMessage(items: Reminder[]) {
       .filter(Boolean)
 
     lines.push(`${toKhmerNumber(index + 1)}. ${escapeHtml(item.title)}`)
-    lines.push(`      ទីតាំង៖ ${escapeHtml(item.place)}`)
-    lines.push(`      អ្នកត្រូវចូលរួម ${escapeHtml(participants[0] ?? '')}`)
-
-    for (const participant of participants.slice(1)) {
-      lines.push(`                       ${escapeHtml(participant)}`)
+    lines.push(`📍 ទីតាំង: ${escapeHtml(item.place)}`)
+    lines.push(`👉 អ្នកចូលរួម:`)
+    for (const participant of participants) {
+      lines.push(`   - ${escapeHtml(participant)}`)
     }
 
     lines.push('')
   })
 
-  lines.push('សូមអរគុណ')
+  lines.push('សូមអរគុណ🙏')
 
   return lines.join('\n')
 }

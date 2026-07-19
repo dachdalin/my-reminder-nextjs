@@ -17,28 +17,23 @@ interface SettingsModalProps {
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { data: session, refetch } = useSession()
   
-  // Tabs: 'profile' | 'password'
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
 
-  // Profile Form State
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [profileLoading, setProfileLoading] = useState(false)
   const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Password Form State
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Password visibility toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  // Populate profile fields when session is loaded
   useEffect(() => {
     if (session?.user) {
       setName(session.user.name ?? '')
@@ -107,7 +102,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-xl font-bold text-foreground">ការកំណត់គណនី</h2>
           <button
@@ -118,7 +112,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </button>
         </div>
 
-        {/* Tabs navigation */}
         <div className="flex border-b border-border bg-muted/30 p-1 m-4 rounded-lg">
           <button
             onClick={() => setActiveTab('profile')}
@@ -144,7 +137,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 pt-2">
           {activeTab === 'profile' ? (
             <form onSubmit={handleProfileSubmit} className="space-y-4">

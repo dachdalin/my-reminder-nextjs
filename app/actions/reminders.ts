@@ -107,7 +107,6 @@ export async function saveTelegramConnection(chatId: string, userId: string) {
 export async function updatePersonalInfo(data: { name: string; email: string }) {
   const userId = await getUserId()
 
-  // Validate that the email is not already taken by another user
   const existingUser = await db
     .select()
     .from(user)

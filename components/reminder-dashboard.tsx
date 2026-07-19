@@ -54,7 +54,6 @@ export default function ReminderDashboard() {
   }
 
   useEffect(() => {
-    // Initial server-action load for the client dashboard.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData()
   }, [])
@@ -66,7 +65,6 @@ export default function ReminderDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-blue-50/30 dark:to-blue-950/10">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -96,9 +94,7 @@ export default function ReminderDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Form and Telegram */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Create Reminder Card */}
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-foreground">កម្មវិធីប្រជុំថ្មី</h2>
@@ -128,7 +124,6 @@ export default function ReminderDashboard() {
               )}
             </div>
 
-            {/* Telegram Connection Card */}
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
               <h2 className="text-lg font-semibold text-foreground mb-4">គោលដៅ Telegram</h2>
               <TelegramConnector
@@ -140,7 +135,6 @@ export default function ReminderDashboard() {
             </div>
           </div>
 
-          {/* Right Column - Reminders List */}
           <div className="lg:col-span-2">
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-foreground mb-6">កាលវិភាគប្រជុំ</h2>
