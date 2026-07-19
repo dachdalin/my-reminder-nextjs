@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 import { deleteReminder } from '@/app/actions/reminders'
 import ReminderForm from './reminder-form'
 import DatePickerWithKhmer from './datepicker-kh'
+import ConfirmModal from './confirm-modal'
+import type { SelectReminder } from '@/lib/db/schema'
 import {
   ChevronDown,
   ChevronLeft,
@@ -17,18 +19,8 @@ import {
   X,
 } from 'lucide-react'
 
-interface Reminder {
-  id: number
-  title: string
-  place: string
-  participants: string
-  meetingDate: string
-  sentAt?: Date | string | null
-  createdAt: Date
-}
-
 interface ReminderListProps {
-  reminders: Reminder[]
+  reminders: SelectReminder[]
   onDelete: () => void
   onUpdate: () => void
 }
@@ -43,19 +35,24 @@ export default function ReminderList({
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [dateFilter, setDateFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('តើអ្នកពិតជាចង់លុបកម្មវិធីប្រជុំនេះមែនទេ?')) return
+  const handleDelete = async () => {
+    if (!deleteConfirmId) return
 
-    setDeletingId(id)
+    setDeletingId(deleteConfirmId)
     try {
-      await deleteReminder(id)
-      onDelete()
-    } catch (error) {
-      console.error('Failed to delete reminder:', error)
+      const result = await deleteReminder(deleteConfirmId)
+      if (result.success) {
+        onDelete()
+        setDeleteConfirmId(null)
+      } else {
+        alert(result.error)
+      }
+    } catch {
       alert('លុបកម្មវិធីប្រជុំមិនបានសម្រេច')
     } finally {
       setDeletingId(null)
@@ -247,7 +244,7 @@ export default function ReminderList({
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      handleDelete(reminder.id)
+                      setDeleteConfirmId(reminder.id)
                     }}
                     disabled={deletingId === reminder.id}
                     className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors disabled:opacity-50"
@@ -363,6 +360,13 @@ export default function ReminderList({
           </button>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={handleDelete}
+        isLoading={deletingId !== null}
+      />
     </div>
   )
 }

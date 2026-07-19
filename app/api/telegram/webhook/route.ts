@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
+import { sendTelegramMessage, escapeHtml } from '@/lib/telegram'
 
 interface TelegramMessage {
   message?: {
@@ -41,51 +40,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true })
   } catch (error) {
-    console.error('Telegram webhook error:', error)
+    console.error('[Telegram Webhook] Error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     )
-  }
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-}
-
-export async function sendTelegramMessage(chatId: string, text: string) {
-  if (!TELEGRAM_BOT_TOKEN) {
-    console.error('TELEGRAM_BOT_TOKEN not set')
-    return false
-  }
-
-  try {
-    const response = await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text,
-          parse_mode: 'HTML',
-        }),
-      }
-    )
-
-    if (!response.ok) {
-      console.error('Failed to send Telegram message:', response.statusText)
-      return false
-    }
-
-    return true
-  } catch (error) {
-    console.error('Error sending Telegram message:', error)
-    return false
   }
 }

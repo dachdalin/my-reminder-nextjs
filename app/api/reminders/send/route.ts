@@ -1,12 +1,11 @@
 import { db } from '@/lib/db'
 import { reminders, telegramConnection } from '@/lib/db/schema'
+import type { SelectReminder } from '@/lib/db/schema'
+import { sendTelegramMessage, escapeHtml, toKhmerNumber } from '@/lib/telegram'
 import { and, eq, inArray, isNull } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const TIME_ZONE = process.env.REMINDER_TIME_ZONE ?? 'Asia/Phnom_Penh'
-
-type Reminder = typeof reminders.$inferSelect
 
 export async function GET(request: Request) {
   return sendTomorrowReminders(request)
@@ -24,16 +23,11 @@ async function sendTomorrowReminders(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  if (!TELEGRAM_BOT_TOKEN) {
-    return NextResponse.json(
-      { error: 'TELEGRAM_BOT_TOKEN is not configured' },
-      { status: 500 }
-    )
-  }
-
   try {
     const tomorrow = getTomorrowDateKey()
-    console.log(`[Cron] Checking reminders. Timezone: ${TIME_ZONE}, Current local time: ${new Date().toLocaleString('en-US', { timeZone: TIME_ZONE })}, Target date: ${tomorrow}`)
+    console.log(
+      `[Cron] Timezone: ${TIME_ZONE}, Local: ${new Date().toLocaleString('en-US', { timeZone: TIME_ZONE })}, Target: ${tomorrow}`
+    )
 
     const rows = await db
       .select({
@@ -49,7 +43,7 @@ async function sendTomorrowReminders(request: Request) {
         and(eq(reminders.meetingDate, tomorrow), isNull(reminders.sentAt))
       )
 
-    const remindersByChat = new Map<string, Reminder[]>()
+    const remindersByChat = new Map<string, SelectReminder[]>()
 
     for (const row of rows) {
       const chatId = row.telegramConnection.telegramChatId
@@ -86,7 +80,7 @@ async function sendTomorrowReminders(request: Request) {
       totalItems: rows.length,
     })
   } catch (error) {
-    console.error('Error in reminder cron:', error)
+    console.error('[Cron] Error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -94,31 +88,7 @@ async function sendTomorrowReminders(request: Request) {
   }
 }
 
-async function sendTelegramMessage(chatId: string, text: string) {
-  const response = await fetch(
-    `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'HTML',
-      }),
-    }
-  )
-
-  if (!response.ok) {
-    console.error('Failed to send Telegram reminder:', response.statusText)
-    return false
-  }
-
-  return true
-}
-
-function formatTomorrowMessage(items: Reminder[]) {
+function formatTomorrowMessage(items: SelectReminder[]) {
   const lines = ['🔔 <b>ជូនដំណឹង សម្រាប់ថ្ងៃស្អែក</b>', '']
 
   items.forEach((item, index) => {
@@ -153,20 +123,4 @@ function getTomorrowDateKey() {
   const tomorrow = new Date(`${todayKey}T00:00:00.000Z`)
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
   return tomorrow.toISOString().slice(0, 10)
-}
-
-function toKhmerNumber(value: number) {
-  const khmerDigits = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩']
-  return value
-    .toString()
-    .split('')
-    .map((digit) => khmerDigits[Number(digit)])
-    .join('')
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
 }

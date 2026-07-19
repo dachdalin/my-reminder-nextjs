@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm'
 import { boolean, date, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 
 // --- Better Auth required tables -------------------------------------------
@@ -55,7 +56,9 @@ export const verification = pgTable('verification', {
 
 export const reminders = pgTable('reminders', {
   id: serial('id').primaryKey(),
-  userId: text('userId').notNull(),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   place: text('place').notNull(),
   participants: text('participants').notNull(),
@@ -67,8 +70,40 @@ export const reminders = pgTable('reminders', {
 
 export const telegramConnection = pgTable('telegramConnection', {
   id: serial('id').primaryKey(),
-  userId: text('userId').notNull(),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
   telegramChatId: text('telegramChatId').notNull(),
   telegramUserId: text('telegramUserId'),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
 })
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+  reminders: many(reminders),
+  telegramConnections: many(telegramConnection),
+}))
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, { fields: [session.userId], references: [user.id] }),
+}))
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, { fields: [account.userId], references: [user.id] }),
+}))
+
+export const reminderRelations = relations(reminders, ({ one }) => ({
+  user: one(user, { fields: [reminders.userId], references: [user.id] }),
+}))
+
+export const telegramConnectionRelations = relations(telegramConnection, ({ one }) => ({
+  user: one(user, { fields: [telegramConnection.userId], references: [user.id] }),
+}))
+
+export type SelectUser = typeof user.$inferSelect
+export type InsertUser = typeof user.$inferInsert
+export type SelectReminder = typeof reminders.$inferSelect
+export type InsertReminder = typeof reminders.$inferInsert
+export type SelectTelegramConnection = typeof telegramConnection.$inferSelect
+export type InsertTelegramConnection = typeof telegramConnection.$inferInsert

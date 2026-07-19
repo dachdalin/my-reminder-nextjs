@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { saveTelegramConnection } from '@/app/actions/reminders'
+import { saveTelegramConnection } from '@/app/actions/telegram'
 import { Button } from '@/components/ui/button'
 import { Check, Copy, MessageCircle } from 'lucide-react'
 
@@ -40,19 +40,19 @@ export default function TelegramConnector({
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault()
     setError('')
-
-    if (!chatId.trim()) {
-      setError('សូមបញ្ចូល Chat ID របស់ Telegram')
-      return
-    }
-
     setIsSaving(true)
+
     try {
-      await saveTelegramConnection(chatId.trim(), telegramUserId.trim())
+      const result = await saveTelegramConnection(chatId, telegramUserId)
+
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
+
       setIsEditing(false)
       onConnect()
-    } catch (err) {
-      console.error(err)
+    } catch {
       setError('រក្សាទុកគោលដៅ Telegram មិនបានសម្រេច')
     } finally {
       setIsSaving(false)

@@ -35,45 +35,17 @@ export default function ReminderForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (!title.trim()) {
-      setError('សូមបញ្ចូលចំណងជើងប្រជុំ')
-      return
-    }
-
-    if (!place.trim()) {
-      setError('សូមបញ្ចូលទីតាំង')
-      return
-    }
-
-    const participantLines = participants
-      .split('\n')
-      .map((name) => name.trim())
-      .filter(Boolean)
-
-    if (participantLines.length === 0) {
-      setError('សូមបញ្ចូលឈ្មោះអ្នកចូលរួមយ៉ាងហោចណាស់ម្នាក់')
-      return
-    }
-
-    if (!meetingDate) {
-      setError('សូមជ្រើសរើសកាលបរិច្ឆេទប្រជុំ')
-      return
-    }
-
     setIsLoading(true)
-    try {
-      const payload = {
-        title: title.trim(),
-        place: place.trim(),
-        participants: participantLines.join('\n'),
-        meetingDate,
-      }
 
-      if (reminder) {
-        await updateReminder(reminder.id, payload)
-      } else {
-        await createReminder(payload)
+    try {
+      const payload = { title, place, participants, meetingDate }
+      const result = reminder
+        ? await updateReminder(reminder.id, payload)
+        : await createReminder(payload)
+
+      if (!result.success) {
+        setError(result.error)
+        return
       }
 
       setTitle('')
@@ -81,13 +53,12 @@ export default function ReminderForm({
       setParticipants('')
       setMeetingDate('')
       onSuccess()
-    } catch (err) {
+    } catch {
       setError(
         isEditing
           ? 'កែប្រែកម្មវិធីប្រជុំមិនបានសម្រេច។ សូមព្យាយាមម្តងទៀត។'
           : 'បង្កើតកម្មវិធីប្រជុំមិនបានសម្រេច។ សូមព្យាយាមម្តងទៀត។'
       )
-      console.error(err)
     } finally {
       setIsLoading(false)
     }

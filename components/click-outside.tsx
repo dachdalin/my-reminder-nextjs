@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 
 interface ClickOutsideProps {
     children: React.ReactNode;
-    exceptionRef?: React.RefObject<HTMLElement>;
+    exceptionRef?: React.RefObject<any>;
     onClick: () => void;
     className?: string;
 }

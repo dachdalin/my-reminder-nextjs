@@ -5,34 +5,16 @@ import { Button } from '@/components/ui/button'
 import ReminderForm from './reminder-form'
 import ReminderList from './reminder-list'
 import TelegramConnector from './telegram-connector'
-import { getReminders, getTelegramConnection } from '@/app/actions/reminders'
+import { getReminders } from '@/app/actions/reminders'
+import { getTelegramConnection } from '@/app/actions/telegram'
 import { LogOut, Settings } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import SettingsModal from './settings-modal'
-
-interface Reminder {
-  id: number
-  userId: string
-  title: string
-  place: string
-  participants: string
-  meetingDate: string
-  sentAt?: Date | null
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface TelegramConn {
-  id: number
-  userId: string
-  telegramChatId: string
-  telegramUserId?: string
-  createdAt: Date
-}
+import type { SelectReminder, SelectTelegramConnection } from '@/lib/db/schema'
 
 export default function ReminderDashboard() {
-  const [reminders, setReminders] = useState<Reminder[]>([])
-  const [telegramConnection, setTelegramConnection] = useState<TelegramConn | null>(null)
+  const [reminders, setReminders] = useState<SelectReminder[]>([])
+  const [telegramConnection, setTelegramConnection] = useState<SelectTelegramConnection | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -40,12 +22,12 @@ export default function ReminderDashboard() {
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const [remindersData, telegramData] = await Promise.all([
+      const [remindersResult, telegramResult] = await Promise.all([
         getReminders(),
         getTelegramConnection(),
       ])
-      setReminders(remindersData as Reminder[])
-      setTelegramConnection(telegramData as TelegramConn | null)
+      if (remindersResult.success) setReminders(remindersResult.data)
+      if (telegramResult.success) setTelegramConnection(telegramResult.data)
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {

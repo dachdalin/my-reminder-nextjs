@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { authClient, useSession } from '@/lib/auth-client'
-import { updatePersonalInfo } from '@/app/actions/reminders'
+import { updatePersonalInfo } from '@/app/actions/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -49,14 +49,17 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setProfileLoading(true)
 
     try {
-      await updatePersonalInfo({ name, email })
+      const result = await updatePersonalInfo({ name, email })
+
+      if (!result.success) {
+        setProfileMessage({ type: 'error', text: result.error })
+        return
+      }
+
       await refetch()
       setProfileMessage({ type: 'success', text: 'ព័ត៌មានផ្ទាល់ខ្លួនត្រូវបានរក្សាទុកដោយជោគជ័យ។' })
-    } catch (err: any) {
-      setProfileMessage({
-        type: 'error',
-        text: err.message === 'Email is already taken' ? 'អ៊ីមែលនេះមានគណនីផ្សេងប្រើប្រាស់រួចហើយ។' : 'មានកំហុសក្នុងការរក្សាទុកព័ត៌មាន។',
-      })
+    } catch {
+      setProfileMessage({ type: 'error', text: 'មានកំហុសក្នុងការរក្សាទុកព័ត៌មាន។' })
     } finally {
       setProfileLoading(false)
     }
