@@ -105,15 +105,17 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
           </Button>
         </form>
 
-        <p className="text-sm text-muted-foreground text-center mt-6">
-          {isSignUp ? 'មានគណនីរួចហើយ? ' : 'មិនទាន់មានគណនី? '}
-          <Link
-            href={isSignUp ? '/sign-in' : '/sign-up'}
-            className="text-foreground font-medium underline-offset-4 hover:underline"
-          >
-            {isSignUp ? 'ចូលគណនី' : 'ចុះឈ្មោះ'}
-          </Link>
-        </p>
+        {isSignUp && (
+          <p className="text-sm text-muted-foreground text-center mt-6">
+            មានគណនីរួចហើយ?{' '}
+            <Link
+              href="/sign-in"
+              className="text-foreground font-medium underline-offset-4 hover:underline"
+            >
+              ចូលគណនី
+            </Link>
+          </p>
+        )}
       </Card>
     </main>
   )
