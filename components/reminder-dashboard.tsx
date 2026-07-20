@@ -1,17 +1,54 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import ReminderForm from './reminder-form'
 import ReminderList from './reminder-list'
 import TelegramConnector from './telegram-connector'
 import { getReminders } from '@/app/actions/reminders'
 import { getTelegramConnection } from '@/app/actions/telegram'
-import { Bell, CalendarDays, LogOut, Plus, Settings, X } from 'lucide-react'
+import {
+  Bell,
+  CalendarClock,
+  CalendarDays,
+  LayoutList,
+  LogOut,
+  Plus,
+  SendHorizonal,
+  Settings,
+  X,
+} from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import SettingsModal from './settings-modal'
 import { ThemeToggle } from './theme-toggle'
 import type { SelectReminder, SelectTelegramConnection } from '@/lib/db/schema'
+
+/** Animates a number from 0 → target over `duration` ms with easeOut. */
+function useCountUp(target: number, duration = 700) {
+  const [count, setCount] = useState(0)
+  const prevTarget = useRef<number>(0)
+
+  useEffect(() => {
+    if (target === prevTarget.current) return
+    prevTarget.current = target
+
+    const start = performance.now()
+    const from = 0
+
+    const tick = (now: number) => {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setCount(Math.round(from + (target - from) * eased))
+      if (progress < 1) requestAnimationFrame(tick)
+    }
+
+    requestAnimationFrame(tick)
+  }, [target, duration])
+
+  return count
+}
 
 export default function ReminderDashboard() {
   const [reminders, setReminders] = useState<SelectReminder[]>([])
@@ -100,23 +137,12 @@ export default function ReminderDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* ── Stats strip ──────────────────────────────────────────── */}
-        {!isLoading && reminders.length > 0 && (
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            {[
-              { label: 'កម្មវិធីទាំងអស់', value: reminders.length, color: 'text-primary' },
-              { label: 'នាំខាងមុខ', value: upcomingCount, color: 'text-emerald-500' },
-              { label: 'បានផ្ញើ', value: sentCount, color: 'text-sky-500' },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm px-4 py-3 text-center shadow-sm hover:shadow-md transition-shadow"
-              >
-                <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        )}
+        <StatsStrip
+          total={reminders.length}
+          upcoming={upcomingCount}
+          sent={sentCount}
+          visible={!isLoading && reminders.length > 0}
+        />
 
         {/* ── Main grid ────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -238,5 +264,120 @@ export default function ReminderDashboard() {
 
       <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
+  )
+}
+
+// ─── StatsStrip ──────────────────────────────────────────────────────────────
+
+interface StatsStripProps {
+  total: number
+  upcoming: number
+  sent: number
+  visible: boolean
+}
+
+interface StatCardProps {
+  label: string
+  sublabel: string
+  target: number
+  icon: React.ReactNode
+  iconBg: string
+  valueColor: string
+  accentBorder: string
+  delay: number
+  visible: boolean
+}
+
+function StatCard({
+  label,
+  sublabel,
+  target,
+  icon,
+  iconBg,
+  valueColor,
+  accentBorder,
+  delay,
+  visible,
+}: StatCardProps) {
+  const count = useCountUp(visible ? target : 0, 800)
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm shadow-sm hover:shadow-lg transition-all duration-300 group"
+      style={{
+        animation: visible ? `fadeSlideUp 0.5s ease both ${delay}ms` : 'none',
+      }}
+    >
+      {/* Accent bottom border */}
+      <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${accentBorder} opacity-60 group-hover:opacity-100 transition-opacity`} />
+
+      <div className="px-4 py-4 flex items-center gap-3">
+        {/* Icon pill */}
+        <div className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+          {icon}
+        </div>
+
+        {/* Text */}
+        <div className="min-w-0 flex-1">
+          <p className={`text-2xl font-bold tabular-nums tracking-tight ${valueColor} leading-none`}>
+            {count}
+          </p>
+          <p className="text-xs font-semibold text-foreground mt-0.5 truncate">{label}</p>
+          <p className="text-[10px] text-muted-foreground truncate">{sublabel}</p>
+        </div>
+      </div>
+
+      {/* Subtle shimmer bg on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-br from-white/5 to-transparent dark:from-white/3" />
+    </div>
+  )
+}
+
+function StatsStrip({ total, upcoming, sent, visible }: StatsStripProps) {
+  return (
+    <>
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
+      <div className={`grid grid-cols-3 gap-3 mb-6 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <StatCard
+          label="កម្មវិធីទាំងអស់"
+          sublabel="រួបរួមសរុប"
+          target={total}
+          icon={<LayoutList className="w-5 h-5 text-primary" />}
+          iconBg="bg-primary/10 dark:bg-primary/20"
+          valueColor="text-primary"
+          accentBorder="bg-primary"
+          delay={0}
+          visible={visible}
+        />
+        <StatCard
+          label="នាំខាងមុខ"
+          sublabel="ថ្ងៃនេះ – ខាងមុខ"
+          target={upcoming}
+          icon={<CalendarClock className="w-5 h-5 text-emerald-500" />}
+          iconBg="bg-emerald-500/10 dark:bg-emerald-500/20"
+          valueColor="text-emerald-500"
+          accentBorder="bg-emerald-500"
+          delay={80}
+          visible={visible}
+        />
+        <StatCard
+          label="បានផ្ញើ"
+          sublabel="ជូនដំណឹងរួចហើយ"
+          target={sent}
+          icon={<SendHorizonal className="w-5 h-5 text-sky-500" />}
+          iconBg="bg-sky-500/10 dark:bg-sky-500/20"
+          valueColor="text-sky-500"
+          accentBorder="bg-sky-500"
+          delay={160}
+          visible={visible}
+        />
+      </div>
+    </>
   )
 }
