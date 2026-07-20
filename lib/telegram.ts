@@ -33,6 +33,40 @@ export function toKhmerNumber(value: number): string {
     .join('')
 }
 
+/**
+ * Converts a 24-hour "HH:MM" string to a Khmer time label.
+ * Examples:
+ *   "08:00" → "៨ៈ០០ នាទីព្រឹក"
+ *   "14:00" → "២ៈ០០ នាទីរសៀល"
+ *   "00:30" → "១២ៈ៣០ នាទីអធ្រាត្រ"
+ */
+export function toKhmerTime(hhmm: string): string {
+  const [hStr, mStr] = hhmm.split(':')
+  const h = parseInt(hStr, 10)
+  const m = parseInt(mStr, 10)
+
+  let period: string
+  let displayHour: number
+
+  if (h === 0) {
+    period = 'នាទីអធ្រាត្រ' // midnight
+    displayHour = 12
+  } else if (h < 12) {
+    period = 'នាទីព្រឹក' // morning (AM)
+    displayHour = h
+  } else if (h === 12) {
+    period = 'នាទីថ្ងៃត្រង់' // noon
+    displayHour = 12
+  } else {
+    period = 'នាទីរសៀល' // afternoon/PM
+    displayHour = h - 12
+  }
+
+  const khmerHour = toKhmerNumber(displayHour)
+  const khmerMinute = toKhmerNumber(m).padStart(2, '០')
+  return `${khmerHour}ៈ${khmerMinute} ${period}`
+}
+
 export async function sendTelegramMessage(
   chatId: string,
   text: string

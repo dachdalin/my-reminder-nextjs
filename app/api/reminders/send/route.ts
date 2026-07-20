@@ -1,7 +1,7 @@
 import { db } from '@/lib/db'
 import { reminders, telegramConnection } from '@/lib/db/schema'
 import type { SelectReminder } from '@/lib/db/schema'
-import { sendTelegramMessage, escapeHtml, toKhmerNumber, KHMER_MONTHS } from '@/lib/telegram'
+import { sendTelegramMessage, escapeHtml, toKhmerNumber, toKhmerTime, KHMER_MONTHS } from '@/lib/telegram'
 import { and, eq, inArray, isNull } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
 
@@ -118,6 +118,9 @@ function formatTomorrowMessage(items: SelectReminder[], targetDateKey?: string) 
       .filter(Boolean)
 
     lines.push(`${toKhmerNumber(index + 1)}. ${escapeHtml(item.title)}`)
+    if (item.meetingTime) {
+      lines.push(`⏰ ម៉ោង: ${toKhmerTime(item.meetingTime)}`)
+    }
     lines.push(`📍 ទីតាំង: ${escapeHtml(item.place)}`)
     lines.push(`👉 អ្នកចូលរួម:`)
     for (const participant of participants) {

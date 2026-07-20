@@ -63,6 +63,7 @@ export const reminders = pgTable('reminders', {
   place: text('place').notNull(),
   participants: text('participants').notNull(),
   meetingDate: date('meetingDate').notNull(),
+  meetingTime: text('meetingTime'),
   sentAt: timestamp('sentAt'),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),

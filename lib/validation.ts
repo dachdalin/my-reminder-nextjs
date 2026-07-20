@@ -1,6 +1,7 @@
 import { fail, ok, type ActionResult } from './action-result'
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
+const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function isValidDateString(value: string): boolean {
@@ -21,6 +22,7 @@ export interface CreateReminderInput {
   place: string
   participants: string
   meetingDate: string
+  meetingTime?: string
 }
 
 export function validateCreateReminder(
@@ -30,6 +32,8 @@ export function validateCreateReminder(
   const place = String(data.place ?? '').trim()
   const participants = String(data.participants ?? '').trim()
   const meetingDate = String(data.meetingDate ?? '').trim()
+  const meetingTimeRaw = String(data.meetingTime ?? '').trim()
+  const meetingTime = meetingTimeRaw || undefined
 
   if (!title) return fail('សូមបញ្ចូលចំណងជើងប្រជុំ')
   if (!place) return fail('សូមបញ្ចូលទីតាំង')
@@ -37,8 +41,11 @@ export function validateCreateReminder(
   if (!meetingDate || !isValidDateString(meetingDate)) {
     return fail('កាលបរិច្ឆេទមិនត្រឹមត្រូវ')
   }
+  if (meetingTime && !TIME_REGEX.test(meetingTime)) {
+    return fail('ម៉ោងប្រជុំមិនត្រឹមត្រូវ')
+  }
 
-  return ok({ title, place, participants, meetingDate })
+  return ok({ title, place, participants, meetingDate, meetingTime })
 }
 
 export interface UpdateReminderInput {
@@ -46,6 +53,7 @@ export interface UpdateReminderInput {
   place?: string
   participants?: string
   meetingDate?: string
+  meetingTime?: string | null
 }
 
 export function validateUpdateReminder(
@@ -81,6 +89,17 @@ export function validateUpdateReminder(
       return fail('កាលបរិច្ឆេទមិនត្រឹមត្រូវ')
     }
     result.meetingDate = meetingDate
+    hasField = true
+  }
+
+  if (data.meetingTime !== undefined) {
+    const meetingTimeRaw = String(data.meetingTime ?? '').trim()
+    if (meetingTimeRaw === '') {
+      result.meetingTime = null
+    } else {
+      if (!TIME_REGEX.test(meetingTimeRaw)) return fail('ម៉ោងប្រជុំមិនត្រឹមត្រូវ')
+      result.meetingTime = meetingTimeRaw
+    }
     hasField = true
   }
 

@@ -11,12 +11,48 @@ interface Reminder {
   place: string
   participants: string
   meetingDate: string
+  meetingTime?: string | null
 }
 
 interface ReminderFormProps {
   onSuccess: () => void
   onCancel?: () => void
   reminder?: Reminder
+}
+
+// Build time options: 06:00–22:00 in 30-min steps
+const KHMER_DIGITS = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩']
+function toKhmer(n: number) {
+  return n.toString().split('').map((d) => KHMER_DIGITS[Number(d)]).join('')
+}
+function toKhmerMinute(n: number) {
+  return toKhmer(n).padStart(2, '០')
+}
+
+function khmerPeriod(h: number) {
+  if (h === 0) return 'នាទីអធ្រាត្រ'
+  if (h < 12) return 'នាទីព្រឹក'
+  if (h === 12) return 'នាទីថ្ងៃត្រង់'
+  return 'នាទីរសៀល'
+}
+
+function formatOptionLabel(hhmm: string) {
+  const [hStr, mStr] = hhmm.split(':')
+  const h = parseInt(hStr, 10)
+  const m = parseInt(mStr, 10)
+  const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return `${toKhmer(displayH)}ៈ${toKhmerMinute(m)} ${khmerPeriod(h)}`
+}
+
+const TIME_OPTIONS: { value: string; label: string }[] = []
+for (let h = 6; h <= 22; h++) {
+  for (const m of [0, 30]) {
+    if (h === 22 && m === 30) break
+    const hh = String(h).padStart(2, '0')
+    const mm = String(m).padStart(2, '0')
+    const value = `${hh}:${mm}`
+    TIME_OPTIONS.push({ value, label: formatOptionLabel(value) })
+  }
 }
 
 export default function ReminderForm({
@@ -28,6 +64,7 @@ export default function ReminderForm({
   const [place, setPlace] = useState(reminder?.place ?? '')
   const [participants, setParticipants] = useState(reminder?.participants ?? '')
   const [meetingDate, setMeetingDate] = useState(reminder?.meetingDate ?? '')
+  const [meetingTime, setMeetingTime] = useState(reminder?.meetingTime ?? '')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const isEditing = !!reminder
@@ -38,7 +75,7 @@ export default function ReminderForm({
     setIsLoading(true)
 
     try {
-      const payload = { title, place, participants, meetingDate }
+      const payload = { title, place, participants, meetingDate, meetingTime: meetingTime || '' }
       const result = reminder
         ? await updateReminder(reminder.id, payload)
         : await createReminder(payload)
@@ -52,6 +89,7 @@ export default function ReminderForm({
       setPlace('')
       setParticipants('')
       setMeetingDate('')
+      setMeetingTime('')
       onSuccess()
     } catch {
       setError(
@@ -106,14 +144,35 @@ export default function ReminderForm({
         </p>
       </div>
 
-      <div>
-        <DatePickerWithKhmer
-          label="កាលបរិច្ឆេទប្រជុំ"
-          value={meetingDate}
-          onChange={(value) => setMeetingDate(value)}
-          locale="km"
-          disabled={isLoading}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <DatePickerWithKhmer
+            label="កាលបរិច្ឆេទប្រជុំ"
+            value={meetingDate}
+            onChange={(value) => setMeetingDate(value)}
+            locale="km"
+            disabled={isLoading}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            ម៉ោងប្រជុំ <span className="text-muted-foreground font-normal">(ស្រេចចិត្ត)</span>
+          </label>
+          <select
+            value={meetingTime}
+            onChange={(e) => setMeetingTime(e.target.value)}
+            disabled={isLoading}
+            className="w-full px-3 py-2.5 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+          >
+            <option value="">-- មិនបញ្ជាក់ --</option>
+            {TIME_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {error && <div className="text-sm text-destructive">{error}</div>}

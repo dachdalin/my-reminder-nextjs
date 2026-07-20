@@ -75,6 +75,21 @@ export default function ReminderList({
     return `${day} ${month} ${year}`
   }
 
+  const formatTime = (hhmm: string) => {
+    const [hStr, mStr] = hhmm.split(':')
+    const h = parseInt(hStr, 10)
+    const m = parseInt(mStr, 10)
+    let period: string
+    let displayH: number
+    if (h === 0) { period = 'នាទីអធ្រាត្រ'; displayH = 12 }
+    else if (h < 12) { period = 'នាទីព្រឹក'; displayH = h }
+    else if (h === 12) { period = 'នាទីថ្ងៃត្រង់'; displayH = 12 }
+    else { period = 'នាទីរសៀល'; displayH = h - 12 }
+    const kh = (n: number) => toKhmerNumeral(String(n))
+    const khm = (n: number) => toKhmerNumeral(String(n)).padStart(2, '០')
+    return `${kh(displayH)}ៈ${khm(m)} ${period}`
+  }
+
   const isOverdue = (meetingDate: Date | string) => {
     const d = typeof meetingDate === 'string' ? new Date(`${meetingDate}T00:00:00`) : meetingDate
     const today = new Date()
@@ -237,6 +252,7 @@ export default function ReminderList({
                   <p className="text-sm text-muted-foreground">
                     {isOverdue(reminder.meetingDate) ? 'ហួសកាលបរិច្ឆេទ៖ ' : ''}
                     {formatDate(reminder.meetingDate)}
+                    {reminder.meetingTime ? ` · ⏰ ${formatTime(reminder.meetingTime)}` : ''}
                     {reminder.sentAt ? ' · បានផ្ញើ' : ''}
                   </p>
                 </div>
@@ -273,9 +289,16 @@ export default function ReminderList({
                   ) : (
                     <>
                       <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm text-foreground">
-                          <span className="font-medium">ទីតាំង៖</span> {reminder.place}
-                        </p>
+                        <div className="space-y-1">
+                          <p className="text-sm text-foreground">
+                            <span className="font-medium">ទីតាំង៖</span> {reminder.place}
+                          </p>
+                          {reminder.meetingTime && (
+                            <p className="text-sm text-foreground">
+                              <span className="font-medium">⏰ ម៉ោង៖</span> {formatTime(reminder.meetingTime)}
+                            </p>
+                          )}
+                        </div>
                         <button
                           type="button"
                           onClick={() => setEditingId(reminder.id)}

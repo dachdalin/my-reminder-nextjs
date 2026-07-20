@@ -113,6 +113,7 @@ async function run() {
       ALTER TABLE "reminders" ADD COLUMN IF NOT EXISTS "participants" TEXT;
       ALTER TABLE "reminders" ADD COLUMN IF NOT EXISTS "meetingDate" DATE;
       ALTER TABLE "reminders" ADD COLUMN IF NOT EXISTS "sentAt" TIMESTAMP;
+      ALTER TABLE "reminders" ADD COLUMN IF NOT EXISTS "meetingTime" TEXT;
 
       UPDATE "reminders"
       SET "place" = ''
