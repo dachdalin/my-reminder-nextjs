@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
+import { ThemeProvider } from '@/components/theme-provider'
 
 const hanuman = localFont({
   src: [
@@ -70,9 +71,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="km" className="bg-background">
+    <html lang="km" className="bg-background" suppressHydrationWarning>
+      <head>
+        {/* Prevent theme flash: apply class before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme:dark)').matches;var isDark=t==='dark'||(t!=='light'&&d);document.documentElement.classList.toggle('dark',isDark);document.documentElement.classList.toggle('light',!isDark);}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className={`${hanuman.className} antialiased`}>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )

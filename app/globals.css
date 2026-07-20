@@ -159,5 +159,25 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Smooth transition when theme changes */
+    transition: background-color 0.25s ease, color 0.1s ease;
+  }
+  /* Themed scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+  /* Prevent transition on non-color properties from being slow */
+  html {
+    scroll-behavior: smooth;
   }
 }
