@@ -1,7 +1,7 @@
 import { db } from '@/lib/db'
 import { reminders, telegramConnection } from '@/lib/db/schema'
 import type { SelectReminder } from '@/lib/db/schema'
-import { sendTelegramMessage, escapeHtml, toKhmerNumber } from '@/lib/telegram'
+import { sendTelegramMessage, escapeHtml, toKhmerNumber, KHMER_MONTHS } from '@/lib/telegram'
 import { and, eq, inArray, isNull } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
 
@@ -57,7 +57,7 @@ async function sendTomorrowReminders(request: Request) {
     const sentIds: number[] = []
 
     for (const [chatId, chatReminders] of remindersByChat) {
-      const message = formatTomorrowMessage(chatReminders)
+      const message = formatTomorrowMessage(chatReminders, tomorrow)
       const didSend = await sendTelegramMessage(chatId, message)
 
       if (didSend) {
@@ -88,8 +88,28 @@ async function sendTomorrowReminders(request: Request) {
   }
 }
 
-function formatTomorrowMessage(items: SelectReminder[]) {
+function formatTomorrowMessage(items: SelectReminder[], targetDateKey?: string) {
   const lines = ['🔔 <b>ជូនដំណឹង សម្រាប់ថ្ងៃស្អែក</b>', '']
+
+  let year: number
+  let monthIndex: number
+  let day: number
+
+  if (targetDateKey) {
+    const [y, m, d] = targetDateKey.split('-').map(Number)
+    year = y
+    monthIndex = m - 1
+    day = d
+  } else {
+    const targetDate = new Date()
+    targetDate.setDate(targetDate.getDate() + 1)
+    year = targetDate.getFullYear()
+    monthIndex = targetDate.getMonth()
+    day = targetDate.getDate()
+  }
+
+  const khmerMonth = KHMER_MONTHS[monthIndex] ?? ''
+  lines.push(`<b>ត្រូវនឹងថ្ងៃទី </b>${toKhmerNumber(day)} ខែ${khmerMonth} ឆ្នាំ${toKhmerNumber(year)}`)
 
   items.forEach((item, index) => {
     const participants = item.participants

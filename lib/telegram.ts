@@ -2,6 +2,22 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 
 const KHMER_DIGITS = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩']
 
+export const KHMER_MONTHS = [
+  'មករា',
+  'កុម្ភៈ',
+  'មីនា',
+  'មេសា',
+  'ឧសភា',
+  'មិថុនា',
+  'កក្កដា',
+  'សីហា',
+  'កញ្ញា',
+  'តុលា',
+  'វិច្ឆិកា',
+  'ធ្នូ',
+]
+
+
 export function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
