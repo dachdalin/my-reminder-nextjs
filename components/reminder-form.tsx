@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { createReminder, updateReminder } from '@/app/actions/reminders'
 import { Button } from '@/components/ui/button'
 import DatePickerWithKhmer from './datepicker-kh'
+import OcrImageUpload from './ocr-image-upload'
+import type { OcrReminderFields } from '@/lib/ocr'
 
 interface Reminder {
   id: number
@@ -69,6 +71,14 @@ export default function ReminderForm({
   const [error, setError] = useState('')
   const isEditing = !!reminder
 
+  const applyOcrFields = (fields: OcrReminderFields) => {
+    if (fields.title) setTitle(fields.title)
+    if (fields.place) setPlace(fields.place)
+    if (fields.participants) setParticipants(fields.participants)
+    if (fields.meetingDate) setMeetingDate(fields.meetingDate)
+    if (fields.meetingTime) setMeetingTime(fields.meetingTime)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -104,6 +114,7 @@ export default function ReminderForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {!isEditing && <OcrImageUpload onExtracted={applyOcrFields} />}
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">ចំណងជើងប្រជុំ</label>
         <input

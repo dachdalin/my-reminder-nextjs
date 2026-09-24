@@ -174,6 +174,7 @@ BETTER_AUTH_SECRET=<32+ chars>
 TELEGRAM_BOT_TOKEN=<your_token>
 NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=<bot_username>
 REMINDER_CRON_SECRET=<32+ chars>
+GOOGLE_CLOUD_VISION_API_KEY=<Google Cloud Vision API key>
 ```
 
 **Production** (Vercel Environment):
