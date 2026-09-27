@@ -8,11 +8,11 @@ export interface OcrReminderFields {
 
 const KHMER_DIGITS = '០១២៣៤៥៦៧៨៩'
 const FIELD_LABELS = [
-  'ចំណងជើង', 'ប្រធានបទ', 'title', 'subject',
-  'ទីតាំង', 'កន្លែង', 'place', 'location',
-  'អ្នកត្រូវចូលរួម', 'អ្នកចូលរួម', 'who', 'participants', 'attendees',
+  'ចំណងជើង', 'ប្រធានបទ', 'កម្មវត្ថុ', 'មុខវិជ្ជា', 'title', 'subject',
+  'ទីតាំង', 'ទីកន្លែង', 'កន្លែង', 'place', 'location',
+  'អ្នកត្រូវចូលរួម', 'អ្នកចូលរួម', 'សមាសភាព', 'who', 'participants', 'attendees',
   'កាលបរិច្ឆេទប្រជុំ', 'កាលបរិច្ឆេទ', 'meeting date', 'date', 'when',
-  'ម៉ោងប្រជុំ', 'ម៉ោង', 'meeting time', 'time',
+  'ម៉ោងប្រជុំ', 'ម៉ោង', 'ពេលវេលា', 'meeting time', 'time',
 ]
 
 function toLatinDigits(value: string) {
@@ -20,11 +20,11 @@ function toLatinDigits(value: string) {
 }
 
 function clean(value: string) {
-  return value.replace(/^[\s:：\-–—]+|[\s:：\-–—]+$/g, '').trim()
+  return value.replace(/^[\s:៖：\-–—]+|[\s:៖：\-–—]+$/g, '').trim()
 }
 
 function normalizedLine(value: string) {
-  return value.toLowerCase().replace(/\s+/g, ' ').trim()
+  return value.toLowerCase().replace(/៖/g, ':').replace(/\s+/g, ' ').trim()
 }
 
 function findLabelIndex(lines: string[], labels: string[]) {
@@ -68,9 +68,10 @@ function parseDate(text: string) {
   const match = normalized.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})|(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})|(\d{4})年(\d{1,2})月(\d{1,2})日/)
   if (!match) {
     const khmerMonths = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ']
-    const wordMatch = normalized.match(/\b(\d{1,2})\s+([^\s]+)\s+(\d{4})\b/)
+    const khmerDateMatch = normalized.match(/(?:ថ្ងៃ\s*ទី?\s*)?(\d{1,2})\s*ខែ\s*([^\s]+)\s*ឆ្នាំ\s*(\d{4})/)
+    const wordMatch = khmerDateMatch ?? normalized.match(/\b(\d{1,2})\s+([^\s]+)\s+(\d{4})\b/)
     if (!wordMatch) return ''
-    const month = khmerMonths.indexOf(wordMatch[2]) + 1
+    const month = khmerMonths.indexOf(wordMatch[2].replace(/[។,]/g, '')) + 1
     if (month === 0) return ''
     return `${wordMatch[3]}-${String(month).padStart(2, '0')}-${String(wordMatch[1]).padStart(2, '0')}`
   }
@@ -110,12 +111,12 @@ export function parseOcrReminderFields(text: string): OcrReminderFields {
     .map(clean)
     .filter(Boolean)
 
-  const titleLabels = ['ចំណងជើង', 'ប្រធានបទ','ដើម្បីចូលរួម','ដើម្បី', 'title', 'subject']
+  const titleLabels = ['ចំណងជើង', 'ប្រធានបទ', 'កម្មវត្ថុ', 'មុខវិជ្ជា', 'ដើម្បីចូលរួម','ដើម្បី', 'title', 'subject']
   const title = valueAfterLabel(lines, titleLabels) || lines.find((line) => findLabelIndex([line], FIELD_LABELS) < 0) || ''
   const place = valueAfterLabel(lines, ['ទីតាំង', 'ទីកន្លែង','កន្លែង', 'place', 'location'])
   const dateLabels = ['កាលបរិច្ឆេទប្រជុំ', 'កាលបរិច្ឆេទ', 'meeting date', 'date', 'when']
-  const timeLabels = ['ម៉ោងប្រជុំ', 'វេលាម៉ោង','ម៉ោង', 'meeting time', 'time']
-  const participantLabels = ['អ្នកត្រូវចូលរួម','សូមអញ្ជើញ','ចាត់អញ្ជើញ', 'អ្នកចូលរួម', 'who', 'participants', 'attendees']
+  const timeLabels = ['ម៉ោងប្រជុំ', 'វេលាម៉ោង', 'ពេលវេលា', 'ម៉ោង', 'meeting time', 'time']
+  const participantLabels = ['អ្នកត្រូវចូលរួម','សូមអញ្ជើញ','ចាត់អញ្ជើញ', 'អ្នកចូលរួម', 'សមាសភាព', 'who', 'participants', 'attendees']
   const dateLine = valueAfterLabel(lines, dateLabels)
   const timeLine = valueAfterLabel(lines, timeLabels)
   const participantsLine = valueAfterLabel(lines, participantLabels)
